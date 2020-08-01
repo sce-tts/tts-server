@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+    flask:
+        build: .
+        # restart: unless-stopped
+        volumes:
+            - "./data:/content"
+            - "./data/nltk_data:/root/nltk_data"
+        ports: 
+            - "5000:5000"

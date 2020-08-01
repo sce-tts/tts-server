@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Inference Test - cc</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+</head>
+
+<body>
+    <div id="root">
+        <button id="start">Start</button>
+        <select name="model" id="model">
+            <option value="fastspeech2">fastspeech2</option>
+            <option value="glowtts" selected>glow-tts</option>
+        </select>
+        <input type="number" id="volume" value="2">
+        <pre id="result" style="width: 100%; height: 400px; overflow-y: scroll;"></pre>
+    </div>
+    <script>
+        const startDOM = document.getElementById('start');
+        const resultDOM = document.getElementById('result');
+        const modelDOM = document.getElementById('model');
+        const volumeDOM = document.getElementById('volume');
+
+        var audio = null;
+        var audio_next = null;
+        var voice_queue = [];
+
+        var socket = null;
+        var last_final_str = "";
+
+        function play_voice() {
+            if (audio_next != null) {
+                audio = audio_next;
+                audio_next = null;
+                audio.addEventListener('ended', play_voice);
+                amplifyMedia(audio, volumeDOM.value);
+                audio.play();
+            }
+            if (voice_queue.length == 0) {
+                audio = null;
+                return;
+            }
+            const text = voice_queue[0];
+            voice_queue.shift();
+
+            audio_next = new Audio('/infer/' + modelDOM.value + '?text=' + encodeURI(text));
+            audio_next.type = 'audio/wav';
+            audio_next.load();
+            if (audio == null) {
+                play_voice();
+            }
+        }
+
+        function clear_voice() {
+            voice_queue = [];
+            if (audio != null) {
+                audio.removeEventListener('ended', play_voice);
+                audio.pause();
+                audio = null;
+                audio_next = null;
+            }
+        }
+
+        function infer() {
+            const text = textDOM.value;
+            fetch('/text', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: text
+                    })
+                })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (texts) {
+                    resultDOM.innerHTML = "";
+                    for (let i = 0; i < texts.length; i++) {
+                        const line = texts[i];
+                        resultDOM.innerHTML += line + "<br>";
+                    }
+                    clear_voice();
+                    voice_queue = texts;
+                    play_voice();
+                });
+        };
+
+        
+        function amplifyMedia(audio, multiplier) {
+            var context = new (window.AudioContext || window.webkitAudioContext);
+            var result = {
+                context: context,
+                source: context.createMediaElementSource(audio),
+                gain: context.createGain(),
+                amplify: function(multiplier) { result.gain.gain.value = multiplier; },
+                getAmpLevel: function() { return result.gain.gain.value; }
+            };
+            result.source.connect(result.gain);
+            result.gain.connect(context.destination);
+            result.amplify(multiplier);
+            return result;
+        }
+
+        function listenSocket() {
+            const url_params = new URLSearchParams(window.location.search);
+            const channel_id = url_params.get('channel');
+
+            if (channel_id === null) {
+                updateCaption("⚠️ 채널 정보를 받아올 수 없습니다", "");
+                return;
+            }
+
+            socket = io("https://cc-overlay.update.sh/overlay/" + channel_id, {
+                transports: ['websocket']
+            });
+            socket.on('reconnect_attempt', function () {
+                socket.io.opts.transports = ['polling', 'websocket'];
+            });
+            socket.on('json', function (data) {
+                updateCaption(data.final_str, data.interim);
+            });
+        }
+
+
+        function updateCaption(final_str, interim) {
+            if (final_str != '' && last_final_str != final_str) {
+                updateFinalStr(final_str);
+            }
+        }
+
+        function updateFinalStr(final_str) {
+            last_final_str = final_str;
+            if (voice_queue.length == 0) {
+                voice_queue = [final_str];
+                play_voice();
+            } else {
+                voice_queue.push(final_str);
+            }
+        }
+
+        startDOM.onclick = listenSocket;
+    </script>
+</body>
+
+</html>
