@@ -3,6 +3,7 @@ version: "2.2"
 services:
     flask:
         build: .
+        image: scetts/tts-server
         cpus: 1
         restart: unless-stopped
         environment:
