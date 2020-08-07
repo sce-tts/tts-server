@@ -54,6 +54,10 @@ RUN git clone --depth 1 https://github.com/sce-tts/TensorflowTTS.git -b r0.7
 WORKDIR /content/src/glow-tts/monotonic_align
 RUN python setup.py build_ext --inplace
 
+ADD data/src/load_g2pk.py /content/src/load_g2pk.py
+WORKDIR /content/src
+RUN python load_g2pk.py
+
 RUN mkdir -p /content/src/flask
 WORKDIR /content/src/flask
 
