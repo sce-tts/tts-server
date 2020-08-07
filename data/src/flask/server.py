@@ -2,7 +2,10 @@ import requests
 from flask import Flask, request, send_file, render_template, jsonify, Response
 from io import BytesIO
 import scipy.io.wavfile as swavfile
-from synthesys import SAMPLING_RATE, generate_audio_glow_tts, generate_audio_fastspeech2
+
+from synthesys import SAMPLING_RATE
+from synthesys import generate_audio_glow_tts
+# from synthesys import generate_audio_fastspeech2
 from text_processer import normalize_text, process_text
 
 app = Flask(__name__)
@@ -75,25 +78,24 @@ def infer_glowtts():
         attachment_filename='audio.wav'
     )
 
-@app.route('/infer/fastspeech2')
-def infer_fastspeech2():
-    text = request.args.get('text', '')
+# @app.route('/infer/fastspeech2')
+# def infer_fastspeech2():
+#     text = request.args.get('text', '')
 
-    wav = BytesIO()
-    if text:
-        text = normalize_text(text.strip())
-        try:
-            audio = generate_audio_fastspeech2(text)
-            swavfile.write(wav, rate=SAMPLING_RATE, data=audio.numpy())
-        except:
-            pass
+#     wav = BytesIO()
+#     if text:
+#         text = normalize_text(text.strip())
+#         try:
+#             audio = generate_audio_fastspeech2(text)
+#             swavfile.write(wav, rate=SAMPLING_RATE, data=audio.numpy())
+#         except:
+#             pass
 
-    return send_file(
-        wav,
-        mimetype='audio/wave',
-        attachment_filename='audio.wav'
-    )
+#     return send_file(
+#         wav,
+#         mimetype='audio/wave',
+#         attachment_filename='audio.wav'
+#     )
 
 if __name__ == '__main__':
-    # app.run(host='0.0.0.0', debug=False)
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=False)

@@ -9,20 +9,13 @@ import torch
 import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
 
-# sys.path.append('/content/src/tacotron2')
-# from text import symbols as tacotron2_symbols
-# from text import text_to_sequence
-# from model import Tacotron2
-# from audio_processing import dynamic_range_decompression
-# sys.path.remove('/content/src/tacotron2')
-
 sys.path.append('/content/src/TensorflowTTS')
 from tensorflow_tts.processor.ljspeech import LJSpeechProcessor
 from tensorflow_tts.processor.ljspeech import symbols as tensorflowtts_symbols
 from tensorflow_tts.processor.ljspeech import _symbol_to_id
 
-from tensorflow_tts.configs import FastSpeech2Config
-from tensorflow_tts.models import TFFastSpeech2
+# from tensorflow_tts.configs import FastSpeech2Config
+# from tensorflow_tts.models import TFFastSpeech2
 
 from tensorflow_tts.configs import MultiBandMelGANGeneratorConfig
 from tensorflow_tts.models import TFMelGANGenerator
@@ -37,19 +30,6 @@ from models import FlowGenerator
 sys.path.remove('/content/src/glow-tts')
 
 SAMPLING_RATE = 22050
-
-
-# def load_tacotron2(model_path):
-#     hparams = generate_hparams()
-#     model = Tacotron2(hparams).cpu()
-#     if hparams.fp16_run:
-#         model.decoder.attention_layer.score_mask_value = np.finfo('float16').min
-#     model.load_state_dict(torch.load(
-#         model_path,
-#         map_location=torch.device('cpu')
-#     )['state_dict'])
-#     model.cpu().eval()
-#     return model
 
 def load_glow_tts(config_path, checkpoint_path):
     with open(config_path, "r") as f:
@@ -68,12 +48,6 @@ def load_glow_tts(config_path, checkpoint_path):
     _ = model.eval()
 
     return model
-
-# def inference_tacotron2(text, model):
-#     sequence = np.array(text_to_sequence(text, ['korean_cleaners']))[None, :]
-#     sequence = torch.autograd.Variable(torch.from_numpy(sequence)).cpu().long()
-#     mel_outputs, mel_outputs_postnet, _, alignments = model.inference(sequence)
-#     return mel_outputs_postnet
 
 def inference_glow_tts(text, model, noise_scale=0.333, length_scale=0.9):
     sequence = np.array(text_to_sequence(text, ['korean_cleaners']))[None, :]
@@ -137,36 +111,27 @@ def synthesis(mb_melgan, pqmf, mel):
     generated_audios = pqmf.synthesis(generated_subbands)
     return generated_audios[0, :, 0]
 
-# tacotron2 = load_tacotron2(
-#     model_path='/content/models/tacotron2_checkpoint_22021'
-# )
 
 glow_tts = load_glow_tts(
-    config_path='/content/models/glow-1/config.json',
-    checkpoint_path='/content/models/glow-1/G_2985.pth'
+    config_path='/content/models/glow-tts/config.json',
+    checkpoint_path=f'/content/models/glow-tts/G_{os.environ.get("TTS_GLOW_TTS")}.pth'
 )
 
 processor = LJSpeechProcessor(None, "korean_cleaners")
 
-fastspeech2 = load_fastspeech2(
-    config_path='/content/models/tensorflowtts/exp/train.fastspeech2.v1-2/config.yml',
-    model_path='/content/models/tensorflowtts/exp/train.fastspeech2.v1-2/checkpoints/model-600000.h5'
-)
+# fastspeech2 = load_fastspeech2(
+#     config_path='/content/models/fastspeech2/config.yml',
+#     model_path=f'/content/models/fastspeech2/checkpoints/model-{os.environ.get("TTS_FASTSPEECH2")}.h5'
+# )
 
 mb_mean, mb_sigma = load_stats(
-    stats_path='/content/models/tensorflowtts/exp/train.multiband_melgan.v1/stats.npy'
+    stats_path='/content/models/mb-melgan/stats.npy'
 )
 
 mb_melgan, pqmf = load_mb_melgan(
-    config_path='/content/models/tensorflowtts/exp/train.multiband_melgan.v1/config.yml',
-    model_path='/content/models/tensorflowtts/exp/train.multiband_melgan.v1/checkpoints/generator-667775.h5'
+    config_path='/content/models/mb-melgan/config.yml',
+    model_path=f'/content/models/mb-melgan/checkpoints/generator-{os.environ.get("TTS_MULTIBAND_MELGAN")}.h5'
 )
-
-# def generate_audio_tacotron2(text):
-#     mel_original = inference_tacotron2(text, tacotron2)
-#     mel_nomalized = normalize_mel(mel_original, mb_mean, mb_sigma)
-#     audio = synthesis(mb_melgan, pqmf, mel_nomalized)
-#     return audio
 
 def generate_audio_glow_tts(text):
     mel_original = inference_glow_tts(text, glow_tts)

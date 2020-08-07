@@ -1,11 +1,16 @@
-version: "3"
+version: "2.2"
 
 services:
     flask:
         build: .
-        # restart: unless-stopped
+        cpus: 1
+        restart: unless-stopped
+        environment:
+            - "TTS_GLOW_TTS=3511"
+            # - "TTS_FASTSPEECH2=600000"
+            - "TTS_MULTIBAND_MELGAN=667775"
         volumes:
-            - "./data:/content"
-            - "./data/nltk_data:/root/nltk_data"
+            - "./data/src/flask:/content/src/flask"
+            - "./data/models:/content/models"
         ports: 
             - "5000:5000"

@@ -43,9 +43,20 @@ RUN pip install --no-cache-dir \
 
 RUN curl https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh | bash
 
+RUN mkdir -p /content/src
+
+WORKDIR /content/src
+
+RUN git clone --depth 1 https://github.com/sce-tts/g2pK.git
+RUN git clone --depth 1 https://github.com/sce-tts/glow-tts.git
+RUN git clone --depth 1 https://github.com/sce-tts/TensorflowTTS.git -b r0.7
+
+WORKDIR /content/src/glow-tts/monotonic_align
+RUN python setup.py build_ext --inplace
+
 RUN mkdir -p /content/src/flask
 WORKDIR /content/src/flask
 
-EXPOSE 8888
+EXPOSE 5000
 
-CMD ["python", "server.py"]
+CMD ["python", "-u", "server.py"]
