@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:1.5.1-cuda10.1-cudnn7-devel
+FROM pytorch/pytorch:1.6.0-cuda10.1-cudnn7-devel
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV PATH /usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
 ENV JAVA_HOME /usr/lib/jvm/java-1.7-openjdk/jre
@@ -42,6 +42,11 @@ RUN pip install --no-cache-dir \
     "flask"
 
 RUN curl https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh | bash
+
+RUN git clone https://github.com/NVIDIA/apex /apex
+WORKDIR /apex/
+# RUN git checkout 37cdaf4
+RUN pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" .
 
 RUN mkdir -p /content/src
 

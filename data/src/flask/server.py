@@ -69,14 +69,17 @@ def infer_glowtts():
         try:
             audio = generate_audio_glow_tts(text)
             swavfile.write(wav, rate=SAMPLING_RATE, data=audio.numpy())
-        except:
-            pass
+            return send_file(
+                wav,
+                mimetype='audio/wave',
+                attachment_filename='audio.wav'
+            )
+        except Exception as e:
+            raise e
+            return "Cannot generate audio", 500
+    return "text shouldn't be empty", 400
 
-    return send_file(
-        wav,
-        mimetype='audio/wave',
-        attachment_filename='audio.wav'
-    )
+    
 
 # @app.route('/infer/fastspeech2')
 # def infer_fastspeech2():
