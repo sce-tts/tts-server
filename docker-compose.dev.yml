@@ -9,6 +9,7 @@ services:
         environment:
             - "TTS_GLOW_TTS=3511"
             - "TTS_MULTIBAND_MELGAN=667775"
+            - "TTS_DEBUG=1"
         volumes:
             - "./data/src/flask:/content/src/flask"
             - "./data/models:/content/models"

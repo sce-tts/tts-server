@@ -4,14 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Inference Test</title>
+    <title>SCE-TTS: 텍스트 읽기</title>
+    <link rel="stylesheet" href="/static/mvp.css">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
-    <div id="root">
-        <div class="form">
-            <textarea name="text" id="text" style="width: 100%; height: 400px;">
-다음의 내용은 사이언스온에 2014년 10월 6일 최명규 서울대 생명과학부 박사후연구원님께서 기고한 글입니다.
+    <header class="page-header">
+        <nav>
+            <a href="/">SCE-TTS</a>
+            <ul>
+                <li><a href="/tts-server/text-inference">텍스트 읽기</a></li>
+                <li><a href="/tts-server/cc-overlay">Open Captions Overlay 연동</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <header>
+                <h1>텍스트 읽기</h1>
+                <p>입력한 텍스트를 음성으로 합성하여 재생합니다.</p>
+            </header>
+            <textarea name="text" id="text">다음의 내용은 사이언스온에 2014년 10월 6일 최명규 서울대 생명과학부 박사후연구원님께서 기고한 글입니다.
 제목은 잠자는 1mm 꼬마선충, 꿈 이라도 꾸는 걸까? 입니다.
 
 잠의 생물학
@@ -86,23 +100,28 @@
 최초 옥탄올 반응 이후 4분과 6분에서 나타난 옥탄올 반응을 살펴보면 30분 동안 잠을 자지 못한 경우의 옥탄올 반응 속도(빨간 색 선)가 다른 경우에 비해 훨씬 느려진 것을 알 수 있습니다.
 선충은 총 자는 시간은 약 세 시간 정도인데, 초기 30분 동안 제대로 자지 못한 선충들은 남은 시간동안 더 깊은 잠에 빠져든다는 것을 의미합니다.
 또한 연구자들은 수면이 방해 받은 경우에 더 오랫동안 수면 상태가 유지된다는 것을 밝혀내었습니다.
-피곤한 선충일수록 훨씬 단잠을 자게 된다는 것입니다.
-            </textarea>
-            <br>
-            <button id="infer">Inference</button>
-            <button id="stop">Stop</button>
-            <select name="model" id="model">
-                <option value="fastspeech2">fastspeech2</option>
-                <option value="glowtts" selected>glow-tts</option>
-            </select>
-            <select name="enter" id="enter">
-                <option value="OFF" selected>infer on enter OFF</option>
-                <option value="ON">infer on enter ON</option>
-            </select>
-            <input type="number" id="volume" value="2">
-            <div id="result" style="width: 100%; line-height: 1.8;"></div>
-        </div>
-    </div>
+피곤한 선충일수록 훨씬 단잠을 자게 된다는 것입니다.</textarea>
+        </section>
+        <section class="form">
+            <div class="form-group">
+                <label>Enter 입력시 음성 재생: </label>
+                <input type="checkbox" id="enter" name="enter" value="ON">
+            </div>
+
+            <div class="form-group">
+                <label>볼륨: </label>
+                <input type="range" id="volume" name="volume" min="0" max="10" value="2">
+            </div>
+
+            <div class="form-group">
+                <button id="infer" class="button-small">음성 재생</button>
+                <button id="stop" class="button-small">정지</button>
+            </div>
+        </section>
+        <section>
+            <div id="result"></div>
+        </section>
+    </main>
     <script>
         function sleep(time) {
             return new Promise((resolve) => setTimeout(resolve, time));
@@ -114,7 +133,7 @@
         const stopDOM = document.getElementById('stop');
         const modelDOM = document.getElementById('model');
         const volumeDOM = document.getElementById('volume');
-        const enterDOM = document.getElementById('enter');
+        const enterDOM = document.querySelector('input[name="enter"]');
 
         var audio = null;
         var audio_next = null;
@@ -136,7 +155,7 @@
             const text = voice_queue[0];
             voice_queue.shift();
 
-            audio_next = new Audio('/infer/' + modelDOM.value + '?text=' + encodeURI(text));
+            audio_next = new Audio('/tts-server/api/infer-glowtts?text=' + encodeURI(text));
             audio_next.type = 'audio/wav';
             audio_next.load();
             if (audio == null) {
@@ -156,16 +175,16 @@
 
         function infer() {
             const text = textDOM.value;
-            fetch('/text', {
-                    method: "POST",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        text: text
-                    })
+            fetch('/tts-server/api/process-text', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text: text
                 })
+            })
                 .then(function (response) {
                     return response.json();
                 })
@@ -173,7 +192,7 @@
                     resultDOM.innerHTML = "";
                     for (let i = 0; i < texts.length; i++) {
                         const line = texts[i];
-                        resultDOM.innerHTML += line + "<br>";
+                        resultDOM.innerHTML += "<p>" + line + "</p>";
                     }
                     clear_voice();
                     voice_queue = texts;
@@ -181,15 +200,15 @@
                 });
         };
 
-        
+
         function amplifyMedia(audio, multiplier) {
             var context = new (window.AudioContext || window.webkitAudioContext);
             var result = {
                 context: context,
                 source: context.createMediaElementSource(audio),
                 gain: context.createGain(),
-                amplify: function(multiplier) { result.gain.gain.value = multiplier; },
-                getAmpLevel: function() { return result.gain.gain.value; }
+                amplify: function (multiplier) { result.gain.gain.value = multiplier; },
+                getAmpLevel: function () { return result.gain.gain.value; }
             };
             result.source.connect(result.gain);
             result.gain.connect(context.destination);
@@ -199,10 +218,11 @@
 
         inferDOM.onclick = infer;
         stopDOM.onclick = clear_voice;
-        textDOM.onkeypress = function(e) {
-            if (e.keyCode == 13 && enterDOM.value == 'ON') {
+        textDOM.onkeypress = function (e) {
+            if (e.keyCode == 13 && enterDOM.checked) {
                 infer();
                 textDOM.value = '';
+                e.preventDefault();
             }
         };
     </script>

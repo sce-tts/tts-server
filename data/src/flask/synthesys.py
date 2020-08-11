@@ -27,40 +27,38 @@ SAMPLING_RATE = 22050
 
 
 def load_glow_tts(config_path, checkpoint_path):
-    with open(config_path, "r") as f:
-        data = f.read()
-    config = json.loads(data)
+    with torch.no_grad():
+        with open(config_path, "r") as f:
+            data = f.read()
+        config = json.loads(data)
 
-    hparams = HParams(**config)
-    model = FlowGenerator(
-        len(symbols), out_channels=hparams.data.n_mel_channels, **hparams.model
-    ).to("cpu")
+        hparams = HParams(**config)
+        model = FlowGenerator(
+            len(symbols), out_channels=hparams.data.n_mel_channels, **hparams.model
+        ).to("cpu")
 
-    load_checkpoint(checkpoint_path, model)
-    model.decoder.store_inverse()  # do not calcuate jacobians for fast decoding
-    _ = model.eval()
+        load_checkpoint(checkpoint_path, model)
+        model.decoder.store_inverse()  # do not calcuate jacobians for fast decoding
+        model.eval()
 
     return model
 
 
 def inference_glow_tts(text, model, noise_scale=0.333, length_scale=0.9):
-    sequence = np.array(text_to_sequence(text, ["korean_cleaners"]))[None, :]
-    x_tst = torch.autograd.Variable(torch.from_numpy(sequence)).cpu().long()
-    x_tst_lengths = torch.tensor([x_tst.shape[1]]).cpu()
     with torch.no_grad():
-        (y_gen_tst, *r), attn_gen, *_ = model(
-            x_tst,
-            x_tst_lengths,
-            gen=True,
-            noise_scale=noise_scale,
-            length_scale=length_scale,
+        sequence = np.array(text_to_sequence(text, ["korean_cleaners"]))[None, :]
+        x = torch.autograd.Variable(torch.from_numpy(sequence)).cpu().long()
+        x_lengths = torch.tensor([x.shape[1]]).cpu()
+        (y_gen, *r), attn_gen, *_ = model(
+            x, x_lengths, gen=True, noise_scale=noise_scale, length_scale=length_scale,
         )
-    return y_gen_tst
+    return y_gen
 
 
 def convert_mel(mel):
-    converted = mel.float().data.cpu().numpy()
-    converted = np.expand_dims(np.transpose(converted[0]), axis=0)
+    with torch.no_grad():
+        converted = mel.float().data.cpu().numpy()
+        converted = np.expand_dims(np.transpose(converted[0]), axis=0)
     return converted
 
 

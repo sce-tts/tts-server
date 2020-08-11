@@ -1,5 +1,15 @@
+import os
 import requests
-from flask import Flask, request, send_file, render_template, jsonify, Response
+from flask import (
+    Flask,
+    request,
+    send_file,
+    render_template,
+    jsonify,
+    Response,
+    redirect,
+    url_for,
+)
 from io import BytesIO
 import scipy.io.wavfile as swavfile
 
@@ -11,22 +21,50 @@ app = Flask(__name__)
 
 
 @app.route("/")
-@app.route("/test")
-def test():
-    return render_template("test.html")
+def index():
+    return redirect(url_for("text_inference"))
 
 
-@app.route("/cc")
-def cc():
-    return render_template("cc.html")
+@app.route("/tts-server/text-inference")
+def text_inference():
+    return render_template("text-inference.html")
 
 
-@app.route("/text", methods=["POST"])
+@app.route("/tts-server/cc-overlay")
+def open_captions_overlay():
+    return render_template("cc-overlay.html")
+
+
+@app.route("/tts-server/api/process-text", methods=["POST"])
 def text():
     text = request.json.get("text", "")
     texts = process_text(text)
 
     return jsonify(texts)
+
+
+@app.route("/tts-server/api/infer-glowtts")
+def infer_glowtts():
+    text = request.args.get("text", "")
+
+    if not text:
+        return "text shouldn't be empty", 400
+    text = normalize_text(text.strip())
+
+    wav = BytesIO()
+    try:
+        audio = generate_audio_glow_tts(text)
+        swavfile.write(wav, rate=SAMPLING_RATE, data=audio.numpy())
+
+    except Exception as e:
+        return f"Cannot generate audio: {str(e)}", 500
+
+    return send_file(wav, mimetype="audio/wave", attachment_filename="audio.wav")
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return "I don't have favicon :p", 404
 
 
 @app.route("/<path:path>")
@@ -74,24 +112,5 @@ def twip_proxy(path):
     return response
 
 
-@app.route("/infer/glowtts")
-def infer_glowtts():
-    text = request.args.get("text", "")
-
-    wav = BytesIO()
-    if text:
-        text = normalize_text(text.strip())
-        try:
-            audio = generate_audio_glow_tts(text)
-            swavfile.write(wav, rate=SAMPLING_RATE, data=audio.numpy())
-            return send_file(
-                wav, mimetype="audio/wave", attachment_filename="audio.wav"
-            )
-        except Exception as e:
-            raise e
-            return "Cannot generate audio", 500
-    return "text shouldn't be empty", 400
-
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=False)
+    app.run(host="0.0.0.0", debug=os.environ.get("TTS_DEBUG", "0") == "1")
