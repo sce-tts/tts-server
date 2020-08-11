@@ -2,10 +2,6 @@ import sys
 import re
 from unicodedata import normalize
 
-sys.path.append('/content/src/TensorflowTTS')
-from tensorflow_tts.processor.ljspeech import symbols as tensorflowtts_symbols
-sys.path.remove('/content/src/TensorflowTTS')
-
 sys.path.append('/content/src/glow-tts')
 from text import symbols as glowtts_symbols
 sys.path.remove('/content/src/glow-tts')
@@ -14,7 +10,7 @@ sys.path.append('/content/src/g2pK')
 import g2pk
 sys.path.remove('/content/src/g2pK')
 
-symbols = set(tensorflowtts_symbols + glowtts_symbols)
+symbols = set(glowtts_symbols)
 
 g2p = g2pk.G2p()
 

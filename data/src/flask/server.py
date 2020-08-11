@@ -5,7 +5,6 @@ import scipy.io.wavfile as swavfile
 
 from synthesys import SAMPLING_RATE
 from synthesys import generate_audio_glow_tts
-# from synthesys import generate_audio_fastspeech2
 from text_processer import normalize_text, process_text
 
 app = Flask(__name__)
@@ -78,27 +77,6 @@ def infer_glowtts():
             raise e
             return "Cannot generate audio", 500
     return "text shouldn't be empty", 400
-
-    
-
-# @app.route('/infer/fastspeech2')
-# def infer_fastspeech2():
-#     text = request.args.get('text', '')
-
-#     wav = BytesIO()
-#     if text:
-#         text = normalize_text(text.strip())
-#         try:
-#             audio = generate_audio_fastspeech2(text)
-#             swavfile.write(wav, rate=SAMPLING_RATE, data=audio.numpy())
-#         except:
-#             pass
-
-#     return send_file(
-#         wav,
-#         mimetype='audio/wave',
-#         attachment_filename='audio.wav'
-#     )
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=False)
