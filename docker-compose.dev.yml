@@ -4,10 +4,8 @@ services:
     flask:
         build:
             context: .
-            dockerfile: ./Dockerfile
-        image: scetts/tts-server
+            dockerfile: ./Dockerfile-dev
         cpus: 1
-        restart: unless-stopped
         environment:
             - "TTS_GLOW_TTS=3511"
             - "TTS_MULTIBAND_MELGAN=667775"

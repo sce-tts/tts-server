@@ -9,39 +9,53 @@ from text_processer import normalize_text, process_text
 
 app = Flask(__name__)
 
-@app.route('/')
-@app.route('/test')
+
+@app.route("/")
+@app.route("/test")
 def test():
-    return render_template('test.html')
+    return render_template("test.html")
 
-@app.route('/cc')
+
+@app.route("/cc")
 def cc():
-    return render_template('cc.html')
+    return render_template("cc.html")
 
-@app.route('/text', methods=['POST'])
+
+@app.route("/text", methods=["POST"])
 def text():
-    text = request.json.get('text', '')
+    text = request.json.get("text", "")
     texts = process_text(text)
 
     return jsonify(texts)
 
-@app.route('/<path:path>')
+
+@app.route("/<path:path>")
 def twip_proxy(path):
-    new_url = request.url.replace(request.host, 'twip.kr')
+    new_url = request.url.replace(request.host, "twip.kr")
     resp = requests.request(
         method=request.method,
         url=new_url,
-        headers={key: value for (key, value) in request.headers if key != 'Host'},
+        headers={key: value for (key, value) in request.headers if key != "Host"},
         data=request.get_data(),
         cookies=request.cookies,
-        allow_redirects=False
+        allow_redirects=False,
     )
-    excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
-    headers = [(name, value) for (name, value) in resp.raw.headers.items()
-               if name.lower() not in excluded_headers]
+    excluded_headers = [
+        "content-encoding",
+        "content-length",
+        "transfer-encoding",
+        "connection",
+    ]
+    headers = [
+        (name, value)
+        for (name, value) in resp.raw.headers.items()
+        if name.lower() not in excluded_headers
+    ]
     content = resp.content
-    if new_url.startswith('http://twip.kr/assets/js/alertbox/lib-'):
-        content = resp.text + f"""
+    if new_url.startswith("http://twip.kr/assets/js/alertbox/lib-"):
+        content = (
+            resp.text
+            + f"""
         const original_function = Howl.prototype.init;
         Howl.prototype.init = function (o) {{
             if (o.src.startsWith('https://www.google.com/speech-api/v1/synthesize?text=')) {{
@@ -55,12 +69,14 @@ def twip_proxy(path):
             return original_function.call(this, o);
         }}
         """
+        )
     response = Response(content, resp.status_code, headers)
     return response
 
-@app.route('/infer/glowtts')
+
+@app.route("/infer/glowtts")
 def infer_glowtts():
-    text = request.args.get('text', '')
+    text = request.args.get("text", "")
 
     wav = BytesIO()
     if text:
@@ -69,14 +85,13 @@ def infer_glowtts():
             audio = generate_audio_glow_tts(text)
             swavfile.write(wav, rate=SAMPLING_RATE, data=audio.numpy())
             return send_file(
-                wav,
-                mimetype='audio/wave',
-                attachment_filename='audio.wav'
+                wav, mimetype="audio/wave", attachment_filename="audio.wav"
             )
         except Exception as e:
             raise e
             return "Cannot generate audio", 500
     return "text shouldn't be empty", 400
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=False)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", debug=False)
