@@ -43,11 +43,6 @@ RUN pip install --no-cache-dir \
 
 RUN curl https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh | bash
 
-RUN git clone https://github.com/NVIDIA/apex /apex
-WORKDIR /apex/
-# RUN git checkout 37cdaf4
-RUN pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" .
-
 RUN mkdir -p /content/src
 
 WORKDIR /content/src
