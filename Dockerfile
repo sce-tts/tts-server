@@ -25,7 +25,7 @@ RUN pip install --no-cache-dir \
     "matplotlib>=3.1.0" \
     "PyYAML>=3.12" \
     "tqdm>=4.26.1" \
-    "h5py>=2.10.0" \
+    "h5py==2.10.0" \
     "pathos>=0.2.5" \
     "unidecode>=1.1.1" \
     "inflect>=4.1.0" \
