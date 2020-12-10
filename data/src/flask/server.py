@@ -99,7 +99,7 @@ def twip_proxy(path):
             if (o.src.startsWith('https://www.google.com/speech-api/v1/synthesize?text=')) {{
                 o.src = o.src.replace(
                     'https://www.google.com/speech-api/v1/synthesize?text=',
-                    '/infer/glowtts?text='
+                    '/tts-server/api/infer-glowtts?text='
                 );
                 o.html5 = false;
                 o.volume = o.volume * 2;
