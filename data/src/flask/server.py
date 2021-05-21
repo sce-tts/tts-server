@@ -21,7 +21,7 @@ app = Flask(__name__)
 
 
 @app.after_request
-def apply_caching(response):
+def allow_cors(response):
     response.headers['Access-Control-Allow-Origin'] = "*"
     return response
 
