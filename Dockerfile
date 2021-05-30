@@ -39,9 +39,8 @@ RUN pip install --no-cache-dir \
     "konlpy" \ 
     "jamo" \ 
     "nltk" \
+    "python-mecab-ko" \
     "flask"
-
-RUN curl https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh | bash
 
 RUN mkdir -p /content/src
 
