@@ -10,11 +10,8 @@ from flask import (
     redirect,
     url_for,
 )
-from io import BytesIO
-import scipy.io.wavfile as swavfile
 
-from synthesys import SAMPLING_RATE
-from synthesys import generate_audio_glow_tts
+from synthesys import synthesize
 from text_processer import normalize_text, process_text
 
 app = Flask(__name__)
@@ -57,15 +54,12 @@ def infer_glowtts():
         return "text shouldn't be empty", 400
     text = normalize_text(text.strip())
 
-    wav = BytesIO()
     try:
-        audio = generate_audio_glow_tts(text)
-        swavfile.write(wav, rate=SAMPLING_RATE, data=audio.numpy())
+        wav = synthesize(text)
+        return send_file(wav, mimetype="audio/wav", attachment_filename="audio.wav")
 
     except Exception as e:
         return f"Cannot generate audio: {str(e)}", 500
-
-    return send_file(wav, mimetype="audio/wave", attachment_filename="audio.wav")
 
 
 @app.route("/favicon.ico")

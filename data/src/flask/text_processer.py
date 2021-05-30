@@ -1,24 +1,14 @@
 import sys
 import re
 from unicodedata import normalize
-
-sys.path.append("/content/src/glow-tts")
-from text import symbols as glowtts_symbols
-
-sys.path.remove("/content/src/glow-tts")
-
-sys.path.append("/content/src/g2pK")
 import g2pk
+from synthesys import synthesizer
 
-sys.path.remove("/content/src/g2pK")
-
-symbols = set(glowtts_symbols)
-
+symbols = synthesizer.tts_config.characters.characters
 g2p = g2pk.G2p()
 
-
 def normalize_text(text):
-    text = simple_replace(text)
+    text = simple_replace(text.strip())
     text = g2p.idioms(text)
     text = g2pk.english.convert_eng(text, g2p.cmu)
     text = g2pk.utils.annotate(text, g2p.mecab)
@@ -146,7 +136,6 @@ def process_text(text):
     texts = split_text(text)
     results = []
     for text in texts:
-        text = simple_replace(text.strip())
         text = normalize_text(text)
         if text:
             results.append(text)
