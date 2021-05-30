@@ -5,7 +5,7 @@ services:
         build:
             context: .
             dockerfile: ./Dockerfile
-        image: scetts/tts-server
+        image: scetts/tts-server:v2
         cpus: 1
         restart: unless-stopped
         environment:
