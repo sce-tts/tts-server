@@ -12,7 +12,7 @@ from flask import (
 )
 
 from synthesys import synthesize
-from text_processer import normalize_text, process_text
+from text_processer import normalize_text, normalize_multiline_text
 
 app = Flask(__name__)
 
@@ -41,7 +41,7 @@ def open_captions_overlay():
 @app.route("/tts-server/api/process-text", methods=["POST"])
 def text():
     text = request.json.get("text", "")
-    texts = process_text(text)
+    texts = normalize_multiline_text(text)
 
     return jsonify(texts)
 
@@ -49,10 +49,10 @@ def text():
 @app.route("/tts-server/api/infer-glowtts")
 def infer_glowtts():
     text = request.args.get("text", "")
+    text = normalize_text(text).strip()
 
     if not text:
         return "text shouldn't be empty", 400
-    text = normalize_text(text.strip())
 
     try:
         wav = synthesize(text)

@@ -8,38 +8,58 @@ symbols = synthesizer.tts_config.characters.characters
 g2p = g2pk.G2p()
 
 def normalize_text(text):
-    text = simple_replace(text.strip())
+    text = text.strip()
+
+    for c in ",;:":
+        text = text.replace(c, ".")
+    text = remove_duplicated_punctuations(text)
+
+    text = jamo_text(text)
+
     text = g2p.idioms(text)
     text = g2pk.english.convert_eng(text, g2p.cmu)
     text = g2pk.utils.annotate(text, g2p.mecab)
     text = g2pk.numerals.convert_num(text)
     text = re.sub("/[PJEB]", "", text)
-    text = eng_cap(text)
 
+    text = alphabet_text(text)
+
+    # remove unreadable characters
     text = normalize("NFD", text)
-    for pos, char in enumerate(text):
-        if char not in symbols:
-            text = text[:pos] + " " + text[pos + 1 :]
+    text = "".join(c for c in text if c in symbols)
     text = normalize("NFC", text)
+
+    text = text.strip()
+    if len(text) == 0:
+        return ""
+
+    # only single punctuation
+    if text in '.!?':
+        return punctuation_text(text)
+
+    # append punctuation if there is no punctuation at the end of the text
+    if text[-1] not in '.!?':
+        text += '.'
+
     return text
 
+def remove_duplicated_punctuations(text):
+    text = re.sub(r"[.?!]+\?", "?", text)
+    text = re.sub(r"[.?!]+!", "!", text)
+    text = re.sub(r"[.?!]+\.", ".", text)
+    return text
 
 def split_text(text):
+    text = remove_duplicated_punctuations(text)
+
     texts = []
-    pi = 0
-    for ci in range(len(text)):
-        if text[ci] in ",;:":
-            # replace character to dot
-            text = text[:ci] + "." + text[ci + 1 :]
-            continue
-        if text[ci] in ".!?\n":
-            texts.append(text[pi : ci + 1])
-            pi = ci + 1
-    texts.append(text[pi:])
+    for subtext in re.findall(r'[^.!?\n]*[.!?\n]', text):
+        texts.append(subtext.strip())
+
     return texts
 
 
-def eng_cap(text):
+def alphabet_text(text):
     text = re.sub(r"(a|A)", "에이", text)
     text = re.sub(r"(b|B)", "비", text)
     text = re.sub(r"(c|C)", "씨", text)
@@ -70,12 +90,16 @@ def eng_cap(text):
     return text
 
 
-def simple_replace(text):
-    # 중복된 문장 부호는 마지막 문장부호로 변경
-    text = re.sub(r"[.?!]+\?", "?", text)
-    text = re.sub(r"[.?!]+!", "!", text)
-    text = re.sub(r"[.?!]+\.", ".", text)
+def punctuation_text(text):
+    # 문장부호
+    text = re.sub(r"!", "느낌표", text)
+    text = re.sub(r"\?", "물음표", text)
+    text = re.sub(r"\.", "마침표", text)
 
+    return text
+
+
+def jamo_text(text):
     # 기본 자모음
     text = re.sub(r"ㄱ", "기역", text)
     text = re.sub(r"ㄴ", "니은", text)
@@ -132,11 +156,7 @@ def simple_replace(text):
     return text
 
 
-def process_text(text):
-    texts = split_text(text)
-    results = []
-    for text in texts:
-        text = normalize_text(text)
-        if text:
-            results.append(text)
-    return results
+def normalize_multiline_text(long_text):
+    texts = split_text(long_text)
+    normalized_texts = [normalize_text(text).strip() for text in texts]
+    return [text for text in normalized_texts if len(text) > 0]

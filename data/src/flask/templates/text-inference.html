@@ -144,7 +144,7 @@
                 audio = audio_next;
                 audio_next = null;
                 audio.addEventListener('ended', play_voice);
-                sleep(1000).then(() => {
+                sleep(300).then(() => {
                     amplifyMedia(audio, volumeDOM.value / 5.0);
                     audio.play();
                 });
