@@ -15,6 +15,7 @@ RUN pip install --no-cache-dir \
     "jamo" \ 
     "nltk" \
     "python-mecab-ko" \
+    "onnxruntime" \
     "flask"
 
 RUN mkdir -p /content/src

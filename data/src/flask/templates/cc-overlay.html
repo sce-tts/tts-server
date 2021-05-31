@@ -37,7 +37,7 @@
             </div>
             <div class="form-group">
                 <label>볼륨: </label>
-                <input type="range" id="volume" name="volume" min="0" max="10" value="2">
+                <input type="range" id="volume" name="volume" min="0" max="10" value="5">
             </div>
             <div class="form-group">
                 <button id="start" class="button-small">시작</button>
@@ -65,7 +65,7 @@
                 audio = audio_next;
                 audio_next = null;
                 audio.addEventListener('ended', play_voice);
-                amplifyMedia(audio, volumeDOM.value);
+                amplifyMedia(audio, volumeDOM.value / 5.0);
                 audio.play();
             }
             if (voice_queue.length == 0) {
