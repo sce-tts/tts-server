@@ -43,11 +43,13 @@ def normalize_text(text):
 
     return text
 
+
 def remove_duplicated_punctuations(text):
     text = re.sub(r"[.?!]+\?", "?", text)
     text = re.sub(r"[.?!]+!", "!", text)
     text = re.sub(r"[.?!]+\.", ".", text)
     return text
+
 
 def split_text(text):
     text = remove_duplicated_punctuations(text)

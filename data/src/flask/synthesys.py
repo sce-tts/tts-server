@@ -21,7 +21,11 @@ if onnx_vocoder_path:
         None,
         False,
     )
-    vocoder = onnxruntime.InferenceSession(path_root + onnx_vocoder_path)
+    sess_options = onnxruntime.SessionOptions()
+    sess_options.intra_op_num_threads = 1
+    sess_options.execution_mode = onnxruntime.ExecutionMode.ORT_PARALLEL
+    sess_options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
+    vocoder = onnxruntime.InferenceSession(path_root + onnx_vocoder_path, sess_options)
 else:
     synthesizer = Synthesizer(
         path_root + os.environ['TTS_MODEL_FILE'],
