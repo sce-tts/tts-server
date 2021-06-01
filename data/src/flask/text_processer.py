@@ -52,6 +52,7 @@ def remove_duplicated_punctuations(text):
 
 
 def split_text(text):
+    text += '\n'
     text = remove_duplicated_punctuations(text)
 
     texts = []
