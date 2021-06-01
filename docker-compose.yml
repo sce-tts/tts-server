@@ -9,11 +9,11 @@ services:
         cpus: 1
         restart: unless-stopped
         environment:
-            - "TTS_MODEL_FILE=glowtts-v2/checkpoint_26000.pth.tar"
-            - "TTS_MODEL_CONFIG=glowtts-v2/config.json"
-            # - "VOCODER_MODEL_FILE=hifigan-v2/best_model_291688.pth.tar"
-            # - "VOCODER_MODEL_CONFIG=hifigan-v2/config.json"
-            - "VOCODER_MODEL_ONNX=hifigan-v2/hifigan.onnx"
+            - "TTS_MODEL_FILE=/content/models/glowtts-v2/model_file.pth.tar"
+            - "TTS_MODEL_CONFIG=/content/models/glowtts-v2/config.json"
+            - "VOCODER_MODEL_FILE=/content/models/hifigan-v2/model_file.pth.tar"
+            - "VOCODER_MODEL_CONFIG=/content/models/hifigan-v2/config.json"
+            # - "VOCODER_MODEL_ONNX=/content/models/hifigan-v2/hifigan.onnx"
         volumes:
             - "./data/src/flask:/content/src/flask"
             - "./data/models:/content/models"

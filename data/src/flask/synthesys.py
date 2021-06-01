@@ -7,13 +7,11 @@ import time
 from TTS.utils.synthesizer import Synthesizer
 from TTS.tts.utils.synthesis import synthesis, trim_silence
 
-path_root = "/content/models/"
-
 onnx_vocoder_path = 'VOCODER_MODEL_ONNX' in os.environ and os.environ['VOCODER_MODEL_ONNX']
 if onnx_vocoder_path:
     synthesizer = Synthesizer(
-        path_root + os.environ['TTS_MODEL_FILE'],
-        path_root + os.environ['TTS_MODEL_CONFIG'],
+        os.environ['TTS_MODEL_FILE'],
+        os.environ['TTS_MODEL_CONFIG'],
         None,
         None,
         None,
@@ -25,14 +23,14 @@ if onnx_vocoder_path:
     sess_options.intra_op_num_threads = 1
     sess_options.execution_mode = onnxruntime.ExecutionMode.ORT_PARALLEL
     sess_options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
-    vocoder = onnxruntime.InferenceSession(path_root + onnx_vocoder_path, sess_options)
+    vocoder = onnxruntime.InferenceSession(onnx_vocoder_path, sess_options)
 else:
     synthesizer = Synthesizer(
-        path_root + os.environ['TTS_MODEL_FILE'],
-        path_root + os.environ['TTS_MODEL_CONFIG'],
+        os.environ['TTS_MODEL_FILE'],
+        os.environ['TTS_MODEL_CONFIG'],
         None,
-        path_root + os.environ['VOCODER_MODEL_FILE'],
-        path_root + os.environ['VOCODER_MODEL_CONFIG'],
+        os.environ['VOCODER_MODEL_FILE'],
+        os.environ['VOCODER_MODEL_CONFIG'],
         None,
         None,
         False,
