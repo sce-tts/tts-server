@@ -1,0 +1,42 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+konlpy = "*"
+jamo = "*"
+nltk = "*"
+python-mecab-ko = {version = "*", platform_system = "!= 'Windows'"}
+onnxruntime = "*"
+TTS = {editable = true, path = "./data/src/TTS"}
+g2pK = {editable = true, path = "./data/src/g2pK"}
+gdown = "*"
+inflect = "*"
+jieba = "*"
+librosa = "==0.8.0"
+matplotlib = "*"
+numpy = "==1.18.5"
+pandas = "*"
+pypinyin = "*"
+pysbd = "*"
+scipy = ">=0.19.0"
+torch = ">=1.7"
+tqdm = "*"
+numba = "==0.52"
+umap-learn = "==0.4.6"
+unidecode = "==0.4.20"
+coqpit = "*"
+Flask = "*"
+Cython = "*"
+PyYAML = "*"
+SoundFile = "*"
+tensorboardX = "*"
+
+[dev-packages]
+
+[scripts]
+server = "python -u data/src/flask/server.py"
+
+[requires]
+python_version = "3.8"

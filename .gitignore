@@ -2,3 +2,6 @@
 
 data/models/*
 !data/models/.gitkeep
+
+data/src/g2pK
+data/src/TTS
