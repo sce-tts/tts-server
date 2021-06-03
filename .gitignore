@@ -5,3 +5,7 @@ data/models/*
 
 data/src/g2pK
 data/src/TTS
+*.spec
+build/
+dist/
+data/mecab/

@@ -32,10 +32,30 @@ Cython = "*"
 PyYAML = "*"
 SoundFile = "*"
 tensorboardX = "*"
+pyinstaller = "*"
 
 [dev-packages]
 
 [scripts]
+build-server = """
+pyinstaller --noconfirm --workpath ./build/server --onefile \
+--hidden-import sklearn.utils._weight_vector \
+--collect-data librosa \
+--collect-data jamo \
+--collect-data konlpy \
+--collect-data g2pk \
+--collect-all TTS \
+--add-data "./data/src/flask/templates;templates" \
+--add-data "./data/src/flask/static;static" \
+data/src/flask/server.py
+"""
+build-convert-hifigan-onnx = """
+pyinstaller --noconfirm --workpath ./build/convert_hifigan_onnx --onefile \
+--hidden-import sklearn.utils._weight_vector \
+--collect-data librosa \
+--collect-all TTS \
+data/src/TTS/TTS/bin/convert_hifigan_onnx.py
+"""
 server = "python -u data/src/flask/server.py"
 
 [requires]
