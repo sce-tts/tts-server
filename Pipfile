@@ -8,6 +8,7 @@ konlpy = "*"
 jamo = "*"
 nltk = "*"
 python-mecab-ko = {version = "*", platform_system = "!= 'Windows'"}
+mecab-python = {file = "https://github.com/Pusnow/mecab-python-msvc/releases/download/mecab_python-0.996_ko_0.9.2_msvc-3/mecab_python-0.996_ko_0.9.2_msvc-cp38-cp38-win_amd64.whl", platform_system = "== 'Windows'"}
 onnxruntime = "*"
 TTS = {editable = true, path = "./data/src/TTS"}
 g2pK = {editable = true, path = "./data/src/g2pK"}
