@@ -33,9 +33,9 @@ def text_inference():
     return render_template("text-inference.html")
 
 
-@app.route("/tts-server/cc-overlay")
+@app.route("/tts-server/oc-overlay")
 def open_captions_overlay():
-    return render_template("cc-overlay.html")
+    return render_template("oc-overlay.html")
 
 
 @app.route("/tts-server/api/process-text", methods=["POST"])

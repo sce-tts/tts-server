@@ -16,7 +16,7 @@
             <a href="/">SCE-TTS</a>
             <ul>
                 <li><a href="/tts-server/text-inference">텍스트 읽기</a></li>
-                <li><a href="/tts-server/cc-overlay">Open Captions Overlay 연동</a></li>
+                <li><a href="/tts-server/oc-overlay">Open Captions Overlay 연동</a></li>
             </ul>
         </nav>
     </header>
@@ -24,7 +24,7 @@
         <section>
             <header>
                 <h1>Open Captions Overlay 연동</h1>
-                <p><a href="https://cc-overlay.update.sh/recognition">Open Captions Overlay</a> 페이지에서 마이크로 인식된 문장을 다시 음성
+                <p><a href="https://oc-overlay.update.sh/recognition">Open Captions Overlay</a> 페이지에서 마이크로 인식된 문장을 다시 음성
                     합성되어 재생합니다.<br>Open Captions Overlay 페이지 상단에 표시되는 오버레이 주소 끝
                     숫자를 트위치 채널코드에 입력한 후 시작 버튼을 클릭하세요.</p>
 
@@ -118,7 +118,7 @@
 
             window.location.hash = channel_id;
 
-            socket = io("https://cc-overlay.update.sh/overlay/" + channel_id, {
+            socket = io("https://oc-overlay.update.sh/overlay/" + channel_id, {
                 transports: ['websocket']
             });
             socket.on('reconnect_attempt', function () {
