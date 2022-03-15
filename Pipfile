@@ -41,6 +41,8 @@ pyinstaller = "*"
 build-server = """
 pyinstaller --noconfirm --workpath ./build/server --onefile \
 --hidden-import sklearn.utils._weight_vector \
+--hidden-import sklearn.utils._typedefs \
+--hidden-import sklearn.neighbors._partition_nodes \
 --collect-data librosa \
 --collect-data jamo \
 --collect-data konlpy \
@@ -53,6 +55,8 @@ data/src/flask/server.py
 build-convert-hifigan-onnx = """
 pyinstaller --noconfirm --workpath ./build/convert_hifigan_onnx --onefile \
 --hidden-import sklearn.utils._weight_vector \
+--hidden-import sklearn.utils._typedefs \
+--hidden-import sklearn.neighbors._partition_nodes \
 --collect-data librosa \
 --collect-all TTS \
 data/src/TTS/TTS/bin/convert_hifigan_onnx.py
