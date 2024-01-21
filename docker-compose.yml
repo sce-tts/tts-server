@@ -5,17 +5,14 @@ services:
         build:
             context: .
             dockerfile: ./Dockerfile
-        image: scetts/tts-server:v2
+        image: scetts/tts-server:v3
         cpus: 1
         restart: unless-stopped
         environment:
-            - "TTS_MODEL_FILE=/content/models/glowtts-v2/model_file.pth.tar"
-            - "TTS_MODEL_CONFIG=/content/models/glowtts-v2/config.json"
-            - "VOCODER_MODEL_FILE=/content/models/hifigan-v2/model_file.pth.tar"
-            - "VOCODER_MODEL_CONFIG=/content/models/hifigan-v2/config.json"
-            # - "VOCODER_MODEL_ONNX=/content/models/hifigan-v2/hifigan.onnx"
+            - "TTS_MODEL_FILE=/data/models/model.onnx"
+            - "TTS_MODEL_CONFIG=/data/models/model.onnx.json"
         volumes:
-            - "./data/src/flask:/content/src/flask"
-            - "./data/models:/content/models"
+            - "./data/src:/data/src"
+            - "./data/models:/data/models"
         ports: 
             - "5000:5000"

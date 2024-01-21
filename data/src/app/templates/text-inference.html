@@ -110,7 +110,7 @@
 
             <div class="form-group">
                 <label>볼륨: </label>
-                <input type="range" id="volume" name="volume" min="0" max="10" value="5">
+                <input type="range" id="volume" name="volume" min="0" max="150" value="100">
             </div>
 
             <div class="form-group">
@@ -145,7 +145,7 @@
                 audio_next = null;
                 audio.addEventListener('ended', play_voice);
                 sleep(300).then(() => {
-                    amplifyMedia(audio, volumeDOM.value / 5.0);
+                    amplifyMedia(audio, volumeDOM.value / 100.0);
                     audio.play();
                 });
             }
@@ -155,7 +155,7 @@
             const text = voice_queue[0];
             voice_queue.shift();
 
-            audio_next = new Audio('/tts-server/api/infer-glowtts?text=' + encodeURI(text));
+            audio_next = new Audio('/tts-server/api/infer?text=' + encodeURI(text));
             audio_next.type = 'audio/wav';
             audio_next.load();
             if (audio == null) {

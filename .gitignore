@@ -1,11 +1,11 @@
+.vscode/
+
 *.py[co]
 
 data/models/*
 !data/models/.gitkeep
 
-data/src/g2pK
-data/src/TTS
-*.spec
 build/
 dist/
-data/mecab/
+
+.env

@@ -75,7 +75,7 @@
             const text = voice_queue[0];
             voice_queue.shift();
 
-            audio_next = new Audio('/tts-server/api/infer-glowtts?text=' + encodeURI(text));
+            audio_next = new Audio('/tts-server/api/infer?text=' + encodeURI(text));
             audio_next.type = 'audio/wav';
             audio_next.load();
             resultDOM.innerHTML = "<p>" + text + "</p>";

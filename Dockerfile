@@ -1,39 +1,33 @@
-FROM pytorch/pytorch:1.7.1-cuda11.0-cudnn8-devel
-
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
-    wget \
-    unzip \
-    git \
+FROM nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    espeak \
     espeak-ng \
+    g++ \
+    gcc \
+    git \
     libsndfile1-dev \
- && rm -rf /var/lib/apt/lists/*
+    make \
+    python3 \
+    python3-dev \
+    python3-pip \
+    python3-venv \
+    python3-wheel \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir \
-    "konlpy" \ 
-    "jamo" \ 
-    "nltk" \
-    "python-mecab-ko" \
-    "onnxruntime" \
-    "flask"
+ENV VIRTUAL_ENV=/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN pip3 install -U pip setuptools wheel
 
-RUN mkdir -p /content/src
-
-WORKDIR /content/src
-
-RUN git clone --depth 1 https://github.com/sce-tts/g2pK.git
-RUN git clone --depth 1 https://github.com/sce-tts/TTS.git -b sce-tts
-
-WORKDIR /content/src/g2pK
-RUN pip install --no-cache-dir -e .
-
-WORKDIR /content/src/TTS
-RUN pip install --no-cache-dir -e .
-
-RUN mkdir -p /content/src/flask
-WORKDIR /content/src/flask
+WORKDIR /data
+COPY pyproject.toml poetry.lock /data/
+RUN pip install --no-cache-dir poetry python-mecab-ko \
+    && poetry export -f requirements.txt --output requirements.txt --without-hashes \
+    && pip install --no-cache-dir -r requirements.txt
+COPY data/src /data/src
 
 EXPOSE 5000
 
-CMD ["python", "-u", "server.py"]
+CMD ["python", "-u", "/data/src/main.py"]

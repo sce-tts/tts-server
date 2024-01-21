@@ -1,4 +1,0 @@
-FROM scetts/tts-server:latest
-
-RUN pip install --no-cache-dir \
-    "black"

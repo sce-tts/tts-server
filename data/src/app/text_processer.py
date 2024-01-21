@@ -1,68 +1,12 @@
-import sys
 import re
-from unicodedata import normalize
-import g2pk
-from synthesys import synthesizer
+from jamo import h2j
+import g2pkk
+import unicodedata
 
-symbols = synthesizer.tts_config.characters.characters
-g2p = g2pk.G2p()
-
-def normalize_text(text):
-    text = text.strip()
-
-    for c in ",;:":
-        text = text.replace(c, ".")
-    text = remove_duplicated_punctuations(text)
-
-    text = jamo_text(text)
-
-    text = g2p.idioms(text)
-    text = g2pk.english.convert_eng(text, g2p.cmu)
-    text = g2pk.utils.annotate(text, g2p.mecab)
-    text = g2pk.numerals.convert_num(text)
-    text = re.sub("/[PJEB]", "", text)
-
-    text = alphabet_text(text)
-
-    # remove unreadable characters
-    text = normalize("NFD", text)
-    text = "".join(c for c in text if c in symbols)
-    text = normalize("NFC", text)
-
-    text = text.strip()
-    if len(text) == 0:
-        return ""
-
-    # only single punctuation
-    if text in '.!?':
-        return punctuation_text(text)
-
-    # append punctuation if there is no punctuation at the end of the text
-    if text[-1] not in '.!?':
-        text += '.'
-
-    return text
+g2p = g2pkk.G2p()
 
 
-def remove_duplicated_punctuations(text):
-    text = re.sub(r"[.?!]+\?", "?", text)
-    text = re.sub(r"[.?!]+!", "!", text)
-    text = re.sub(r"[.?!]+\.", ".", text)
-    return text
-
-
-def split_text(text):
-    text += '\n'
-    text = remove_duplicated_punctuations(text)
-
-    texts = []
-    for subtext in re.findall(r'[^.!?\n]*[.!?\n]', text):
-        texts.append(subtext.strip())
-
-    return texts
-
-
-def alphabet_text(text):
+def alphabet_text(text: str) -> str:
     text = re.sub(r"(a|A)", "에이", text)
     text = re.sub(r"(b|B)", "비", text)
     text = re.sub(r"(c|C)", "씨", text)
@@ -93,7 +37,7 @@ def alphabet_text(text):
     return text
 
 
-def punctuation_text(text):
+def punctuation_text(text: str) -> str:
     # 문장부호
     text = re.sub(r"!", "느낌표", text)
     text = re.sub(r"\?", "물음표", text)
@@ -157,6 +101,96 @@ def jamo_text(text):
     text = re.sub(r"ㅢ", "의", text)
 
     return text
+
+
+def remove_duplicated_punctuations(text: str) -> str:
+    text = re.sub(r"[.?!]+\?", "?", text)
+    text = re.sub(r"[.?!]+!", "!", text)
+    text = re.sub(r"[.?!]+\.", ".", text)
+    return text
+
+
+def custom_g2p(text: str) -> str:
+    text = g2p.idioms(text)
+    text = g2pkk.english.convert_eng(text, g2p.cmu)
+    text = g2pkk.utils.annotate(text, g2p.mecab)
+    text = g2pkk.numerals.convert_num(text)
+    text = h2j(text)
+    for func in (
+        g2pkk.special.jyeo,
+        g2pkk.special.ye,
+        g2pkk.special.consonant_ui,
+        g2pkk.special.josa_ui,
+        g2pkk.special.vowel_ui,
+        g2pkk.special.jamo,
+        g2pkk.special.rieulgiyeok,
+        g2pkk.special.rieulbieub,
+        g2pkk.special.verb_nieun,
+        g2pkk.special.balb,
+        g2pkk.special.palatalize,
+        g2pkk.special.modifying_rieul,
+    ):
+        text = func(text)
+    text = re.sub("/[PJEB]", "", text)
+
+    # for str1, str2, rule_ids in g2p.table:
+    #     _text = text
+    #     text = re.sub(str1, str2, text)
+
+    #     if len(rule_ids) > 0:
+    #         rule = "\n".join(g2p.rule2text.get(rule_id, "") for rule_id in rule_ids)
+    #     else:
+    #         rule = ""
+    #     g2pkk.utils.gloss(False, text, _text, rule)
+
+    for func in (
+        g2pkk.regular.link1,
+        g2pkk.regular.link2,
+        # g2pkk.regular.link3,
+        g2pkk.regular.link4,
+    ):
+        text = func(text)
+
+    return text
+
+
+def normalize_text(text: str) -> str:
+    text = text.strip()
+
+    for c in ",;:":
+        text = text.replace(c, ".")
+    text = remove_duplicated_punctuations(text)
+
+    text = jamo_text(text)
+    text = custom_g2p(text)
+
+    text = alphabet_text(text)
+
+    text = text.strip()
+    if len(text) == 0:
+        return ""
+
+    # only single punctuation
+    if text in ".!?":
+        return punctuation_text(text)
+
+    # append punctuation if there is no punctuation at the end of the text
+    if text[-1] not in ".!?":
+        text += "."
+
+    text = unicodedata.normalize("NFC", text)
+    return text
+
+
+def split_text(text):
+    text += "\n"
+    text = remove_duplicated_punctuations(text)
+
+    texts = []
+    for subtext in re.findall(r"[^.!?\n]*[.!?\n]", text):
+        texts.append(subtext.strip())
+
+    return texts
 
 
 def normalize_multiline_text(long_text):
